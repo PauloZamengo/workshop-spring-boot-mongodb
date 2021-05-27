@@ -5,14 +5,11 @@ import com.paulozamengo.workshopmongo.dto.MusicDTO;
 import com.paulozamengo.workshopmongo.service.MusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.swing.text.html.Option;
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +30,31 @@ public class MusicResource {
     public ResponseEntity<MusicDTO> findById(@PathVariable String id) {
         Music musica = musicService.findOne(id);
         return ResponseEntity.ok().body(new MusicDTO(musica));
+    }
+
+    @PostMapping()
+    public ResponseEntity<Void> insert(@RequestBody MusicDTO objDTO) {
+        Music musica = musicService.fromDTO(objDTO);
+        musica = musicService.insert(musica);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(objDTO.getId()).toUri();
+        return ResponseEntity.created(uri).build();
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        musicService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Void> update(@PathVariable String id,
+                                       @RequestBody MusicDTO objDTO) {
+        Music musica = musicService.fromDTO(objDTO);
+        musica.setId(id);
+        musica = musicService.update(musica);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
